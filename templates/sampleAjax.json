@@ -1,0 +1,38 @@
+[{
+      "tweets_num": 2,
+      "keyword": "tutu",
+      "center_lat": 41.96538075,
+      "center_lon": -98.6068595,
+      "tweets": [
+        {
+          "text": "tutu1 number 1",
+          "user_id": 379265543,
+          "text_sentiment": 0
+        },
+        {
+          "text": "tutu1 number 2",
+          "user_id": 755565497253593100,
+          "text_sentiment": 0
+        }
+      ],
+      "keyword_sentiment": 0
+    },
+    {
+      "tweets_num": 2,
+      "keyword": "gaga",
+      "center_lat": 41.96538075,
+      "center_lon": -98.2068595,
+      "tweets": [
+        {
+          "text": "haha number 1",
+          "user_id": 379265543,
+          "text_sentiment": 0
+        },
+        {
+          "text": "haha number 1",
+          "user_id": 755565497253593100,
+          "text_sentiment": 0
+        }
+      ],
+      "keyword_sentiment": 0
+    }]

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Sentiment Map</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.2/dist/leaflet.css" />
+	<script src="https://unpkg.com/leaflet@1.0.2/dist/leaflet.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h3 class="text-muted">Sentiment App</h3>
+        </div>
+        <div class="row marketing">
+            <div id="mapid" style="width: 800px; height: 600px;"></div>
+        </div>
+
+        <footer class="footer">
+            <p>Out1ier CSE545</p>
+        </footer>
+
+    </div>
+</body>
+<script>
+    var mymap = L.map('mapid').setView([41,-98], 3.8);
+
+
+    new L.TileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(mymap);
+    var createLabelIcon = function(labelClass,labelText){
+        return L.divIcon({
+        className: labelClass,
+        html: labelText
+        })
+    };
+    var queue = [];
+    var interval = 10000;
+    var dat;
+    function get_fb(){
+        $.ajax({
+                type: 'GET',
+                url: '/getWords',
+                data: $(this).serialize(),
+                dataType: 'json',
+                success: function (data) {
+                        dat = data;
+                        for(var i=0; i<data.length; i++) {
+                            var marker = L.marker(new L.LatLng(data[i].center_lon, data[i].center_lat), {icon:createLabelIcon("textLabelclass",data[i].keyword)}).addTo(mymap);
+                            marker.labelId = data[i].id;
+                            var myPopup = L.popup({
+                                maxHeight: 190,
+                              keepInView: true
+                            });
+                            marker.bindPopup(myPopup);
+                            marker.on('click', onMarkerClick);
+                            queue.push(marker);
+                        }
+                        while(queue.length > 50) {
+                            mymap.removeLayer(queue.shift());
+                        }
+                },
+                complete: function (data) {
+                        // Schedule the next
+                        setTimeout(get_fb, interval);
+                }
+        });
+    }
+    get_fb();
+    function onMarkerClick(e) {
+        var popup = e.target.getPopup();
+        $.ajax({
+            type: 'GET',
+            url: '/getWordData',
+            data: e.target.labelId,
+            data : {
+                id : e.target.labelId
+              },
+            dataType: 'json'
+        })
+        .done(function( data ) {
+            console.log(data);
+            if(data == 'error'){
+                e.target.closePopup();
+            }
+            content = ''
+            for(var i=0; i<data.length; i++) {
+                cClass = 'greenText'
+                if(data[i].text_sentiment == 0){
+                    cClass = 'redText'
+                }
+                content += '<p class="' +cClass +'">'+data[i].text+'</p>'
+            }
+            popup.setContent( content );
+            popup.update();
+        })
+        .fail(function( data ) {
+            mymap.removeLayer(e);
+        });
+    }
+
+
+</script>
+<style>
+    .textLabelclass{
+  white-space:nowrap;
+  font-weight: 300;
+    font-size:25;
+  text-shadow: 0 0 0.1em black, 0 0 0.1em black,
+        0 0 0.1em black,0 0 0.1em black,0 0 0.1em;
+  color: yellow;
+}
+    p.redText {
+        color: red;
+}
+    p.greenText {
+        color: green;
+}
+</style>
+</html>
